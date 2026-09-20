@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Feather, Zap, Recycle } from "lucide-react";
 import { EASE } from "../lib/motion";
-import { PrimaryButton, GhostButton, Tag } from "./ui";
+import { PrimaryButton, GhostButton, OrbitBadge, Tag } from "./ui";
 
 function LineReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   return (
