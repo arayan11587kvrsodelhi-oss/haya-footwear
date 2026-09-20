@@ -1,25 +1,72 @@
 <!doctype html>
 <html lang="en">
-  <head>
+ <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="haya — a premium footwear concept built around lightness, layered materials, and a quiet editorial point of view." />
+    <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#131210" />
-    <title>haya — Featherlight Footwear Concept</title>
+
+    <title>HAYA - Premium Footwear Concept</title>
+    <meta
+      name="description"
+      content="A premium footwear concept exploring editorial art direction, product presentation, motion, and responsive web design."
+    />
+    <meta name="author" content="HAYA - Premium Footwear Concept" />
+    <link rel="canonical" href="https://haya-footwear.vercel.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="HAYA" />
+    <meta property="og:title" content="HAYA - Premium Footwear Concept" />
+    <meta
+      property="og:description"
+      content="A premium footwear concept exploring editorial art direction, product presentation, motion, and responsive web design."
+    />
+    <meta property="og:url" content="https://haya-footwear.vercel.app/" />
+    <meta property="og:image" content="https://haya-footwear.vercel.app/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="HAYA — Premium Footwear Concept" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HAYA - Premium Footwear Concept" />
+    <meta
+      name="twitter:description"
+      content="A premium footwear concept exploring editorial art direction, product presentation, motion, and responsive web design."
+    />
+    <meta name="twitter:image" content="https://haya-footwear.vercel.app/og-image.jpg" />
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Fonts: preconnect early, then load the three families used by the type system. -->
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=general-sans@400,500,600&display=swap"
+      href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,600&display=swap"
       rel="stylesheet"
     />
     <link
       href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&display=swap"
       rel="stylesheet"
     />
-  </head>
-  <body>
+
+    <!-- Preload the hero image so the first paint of the product is immediate. -->
+    <link
+      rel="preload"
+      as="image"
+      href="/images/gen/hero-shoe-1024.webp"
+      imagesrcset="/images/gen/hero-shoe-640.webp 640w, /images/gen/hero-shoe-1024.webp 1024w, /images/gen/hero-shoe-1408.webp 1408w"
+      imagesizes="(max-width: 640px) 92vw, (max-width: 1024px) 80vw, 34rem"
+      type="image/webp"
+    />
+ </head>
+ <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-  </body>
+ </body>
 </html>

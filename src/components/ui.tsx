@@ -1,7 +1,12 @@
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
-import { ArrowRight, Star } from "lucide-react";
-import { EASE } from "../lib/motion";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import {
+  EASE,
+  REVEAL_VIEWPORT,
+  revealTransition,
+  useMagnetic,
+} from "../lib/motion";
 import { cn } from "../utils/cn";
 
 /* ————————————————————————— Scroll reveal wrapper ————————————————————————— */
@@ -24,8 +29,8 @@ export function Reveal({
       className={className}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-70px" }}
-      transition={{ duration: 0.9, delay, ease: EASE }}
+      viewport={REVEAL_VIEWPORT}
+      transition={{ ...revealTransition, delay }}
     >
       {children}
     </Comp>
@@ -52,7 +57,7 @@ export function Tag({
         className
       )}
     >
-      <span className="relative flex size-1.5">
+      <span className="relative flex size-1.5" aria-hidden>
         <span className="absolute inline-flex size-full animate-pulse-dot rounded-full bg-ember-500" />
       </span>
       {children}
@@ -61,47 +66,77 @@ export function Tag({
 }
 
 /* ————————————————————————— Buttons ————————————————————————— */
+/**
+ * One button geometry for the entire site: same height (56px / min 44px touch
+ * target), radius, tracking and hover choreography. Variants only change tone,
+ * never dimensions, so buttons stay aligned when placed side by side.
+ */
 const btnBase =
-  "group relative inline-flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full px-7 py-3.5 text-[15px] font-semibold tracking-tight transition-all duration-300 hover:scale-[1.03] active:scale-[0.97]";
+  "group relative inline-flex h-14 min-h-11 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full px-7 text-[15px] font-semibold tracking-[-0.01em] transition-[transform,box-shadow,background-color,border-color] duration-[var(--dur-base)] ease-[var(--ease-signature)] hover:-translate-y-0.5 active:scale-[0.98]";
 
+const btnTone = {
+  ink: "bg-ink-950 text-bone-50 shadow-[0_10px_30px_-12px_rgba(19,18,16,0.5)] hover:shadow-[0_18px_44px_-14px_rgba(19,18,16,0.6)]",
+  ember:
+    "bg-ember-500 text-white shadow-[0_10px_30px_-12px_rgba(254,78,23,0.6)] hover:shadow-[0_18px_44px_-14px_rgba(254,78,23,0.7)]",
+  bone: "bg-bone-50 text-ink-950 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.6)]",
+} as const;
+
+/** Sheen sweep — the only "shiny" effect in the design system. */
 function Shine() {
   return (
     <span
       aria-hidden
-      className="pointer-events-none absolute inset-0 -translate-x-[120%] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-[120%]"
+      className="pointer-events-none absolute inset-0 -translate-x-[130%] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-[130%]"
     />
   );
 }
 
+/**
+ * Primary CTA. On fine-pointer devices the button drifts a few pixels toward
+ * the cursor; on touch or with reduced motion it is completely static, because
+ * `useMagnetic` short-circuits and keeps its motion values at zero.
+ */
 export function PrimaryButton({
   children,
-  href = "#pricing",
+  href = "#collection",
   tone = "ink",
   className,
+  arrow = "right",
 }: {
   children: ReactNode;
   href?: string;
-  tone?: "ink" | "ember" | "bone";
+  tone?: keyof typeof btnTone;
   className?: string;
+  arrow?: "right" | "diagonal";
 }) {
+  const { ref, style, onPointerMove, onPointerLeave } = useMagnetic(7);
+  const Arrow = arrow === "right" ? ArrowRight : ArrowUpRight;
+
   return (
-    <a
+    <motion.a
+      ref={ref as React.Ref<HTMLAnchorElement>}
       href={href}
-      className={cn(
-        btnBase,
-        tone === "ink" && "bg-ink-950 text-bone-50 shadow-xl shadow-ink-950/20 hover:shadow-2xl hover:shadow-ink-950/25",
-        tone === "ember" && "bg-ember-500 text-white shadow-xl shadow-ember-500/30 hover:shadow-2xl hover:shadow-ember-500/40",
-        tone === "bone" && "bg-bone-50 text-ink-950 shadow-xl shadow-black/30",
-        className
-      )}
+      style={style}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+      className={cn(btnBase, btnTone[tone], className)}
     >
       <Shine />
       <span className="relative">{children}</span>
-      <ArrowRight className="relative size-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-    </a>
+      <Arrow
+        className={cn(
+          "relative size-4 transition-transform duration-[var(--dur-base)] ease-[var(--ease-signature)]",
+          arrow === "right"
+            ? "group-hover:translate-x-1"
+            : "group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        )}
+        aria-hidden
+      />
+    </motion.a>
   );
 }
 
+/** Secondary CTA — identical geometry, outline treatment. */
 export function GhostButton({
   children,
   href,
@@ -117,27 +152,46 @@ export function GhostButton({
     <a
       href={href}
       className={cn(
-        "group inline-flex items-center gap-2 rounded-full border px-7 py-3.5 text-[15px] font-semibold tracking-tight transition-all duration-300 active:scale-[0.97]",
+        btnBase,
         dark
-          ? "border-white/20 text-bone-100 hover:border-white/50 hover:bg-white/5"
-          : "border-ink-900/15 bg-white/40 text-ink-900 hover:border-ink-900/40 hover:bg-white/70",
+          ? "border border-white/20 text-bone-100 hover:border-white/45 hover:bg-white/[0.06]"
+          : "border border-ink-900/15 bg-white/40 text-ink-900 hover:border-ink-900/35 hover:bg-white/70",
         className
       )}
     >
       {children}
-      <ArrowRight className="size-4 -rotate-45 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+      <ArrowUpRight
+        className="size-4 transition-transform duration-[var(--dur-base)] ease-[var(--ease-signature)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        aria-hidden
+      />
     </a>
   );
 }
 
-/* ————————————————————————— Star rating row ————————————————————————— */
-export function Stars({ className, size = "size-4" }: { className?: string; size?: string }) {
+/** Inline "read more" link used to close out sections. */
+export function InlineLink({
+  children,
+  href,
+  className,
+}: {
+  children: ReactNode;
+  href: string;
+  className?: string;
+}) {
   return (
-    <span className={cn("inline-flex items-center gap-0.5", className)} aria-label="Rated 4.9 out of 5 stars">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={cn(size, "fill-ember-500 text-ember-500")} aria-hidden />
-      ))}
-    </span>
+    <a
+      href={href}
+      className={cn(
+        "group inline-flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-ink-950 transition-colors duration-[var(--dur-base)] hover:text-ember-500",
+        className
+      )}
+    >
+      {children}
+      <ArrowUpRight
+        className="size-4 transition-transform duration-[var(--dur-base)] ease-[var(--ease-signature)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        aria-hidden
+      />
+    </a>
   );
 }
 
@@ -146,7 +200,7 @@ export function OrbitBadge({ text, className }: { text: string; className?: stri
   return (
     <div
       className={cn(
-        "glass-light grid size-28 place-items-center rounded-full sm:size-32",
+        "glass-light relative grid size-24 place-items-center rounded-full sm:size-32",
         className
       )}
       aria-hidden
@@ -159,9 +213,12 @@ export function OrbitBadge({ text, className }: { text: string; className?: stri
           <textPath href="#orbit-circle">{text}</textPath>
         </text>
       </svg>
-      <span className="grid size-10 place-items-center rounded-full bg-ember-500 text-white shadow-lg shadow-ember-500/40">
-        <ArrowRight className="size-4 -rotate-45" />
+      <span className="grid size-9 place-items-center rounded-full bg-ember-500 text-white shadow-[0_8px_20px_-6px_rgba(254,78,23,0.6)] sm:size-10">
+        <ArrowUpRight className="size-4" />
       </span>
     </div>
   );
 }
+
+export { EASE };
+

@@ -19,19 +19,42 @@
   --color-ember-500: #fe4e17;
   --color-ember-600: #e23f0c;
 
+  /* ——— Design system: radii ——— */
+  --radius-sm: 0.625rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 1.75rem;
+  --radius-2xl: 2rem;
+  --radius-pill: 999px;
+
+  /* ——— Design system: motion timing ——— */
+  --ease-signature: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 200ms;
+  --dur-base: 300ms;
+  --dur-slow: 600ms;
+  --dur-slower: 900ms;
+
+  /* ——— Design system: elevation ——— */
+  --shadow-card: 0 1px 2px color-mix(in oklab, var(--color-ink-950) 4%, transparent),
+    0 12px 28px -12px color-mix(in oklab, var(--color-ink-950) 12%, transparent);
+  --shadow-card-hover: 0 2px 4px color-mix(in oklab, var(--color-ink-950) 5%, transparent),
+    0 26px 50px -18px color-mix(in oklab, var(--color-ink-950) 20%, transparent);
+
+  /* ——— Design system: fluid section rhythm ——— */
+  --space-section: clamp(5rem, 9vw, 9rem);
+  --space-section-tight: clamp(3.5rem, 6vw, 6rem);
+
   /* ——— Type ——— */
-  --font-display: "Clash Display", "General Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "General Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Clash Display", "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Satoshi", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-accent: "Instrument Serif", ui-serif, Georgia, serif;
 
   /* ——— Motion ——— */
   --animate-marquee: marquee 48s linear infinite;
   --animate-float: float 7s ease-in-out infinite;
   --animate-float-slow: float 10s ease-in-out 1.2s infinite;
-  --animate-rotate-slow: rotate360 18s linear infinite;
-  --animate-blob: blob 16s ease-in-out infinite;
+  --animate-rotate-slow: rotate360 22s linear infinite;
   --animate-pulse-dot: pulseDot 2.4s ease-in-out infinite;
-  --animate-glow-drift: glowDrift 12s ease-in-out infinite alternate;
 
   @keyframes marquee {
     from { transform: translateX(0); }
@@ -45,18 +68,9 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
-  @keyframes blob {
-    0%, 100% { border-radius: 58% 42% 55% 45% / 48% 55% 45% 52%; transform: scale(1) rotate(0deg); }
-    33% { border-radius: 45% 55% 48% 52% / 55% 42% 58% 45%; transform: scale(1.06) rotate(4deg); }
-    66% { border-radius: 52% 48% 42% 58% / 45% 58% 42% 55%; transform: scale(0.97) rotate(-3deg); }
-  }
   @keyframes pulseDot {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.45; transform: scale(0.7); }
-  }
-  @keyframes glowDrift {
-    from { transform: translate(-6%, -4%) scale(1); }
-    to { transform: translate(7%, 6%) scale(1.15); }
   }
 }
 
@@ -64,11 +78,33 @@
   html {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Lenis drives scrolling; disable native smooth-scroll to avoid fighting it. */
+    scroll-behavior: auto;
   }
 
   body {
     @apply bg-bone-100 font-body text-ink-900;
-    overflow-x: hidden;
+    /* `clip` contains horizontal overflow without creating a scroll container,
+       which `hidden` does — that would break `position: sticky` descendants. */
+    overflow-x: clip;
+  }
+
+  html.menu-open,
+  body.menu-open {
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  /* Anchor targets must clear the fixed navbar (~56–64px) plus breathing room. */
+  :target,
+  [id] {
+    scroll-margin-top: 5.5rem;
+  }
+
+  img,
+  picture,
+  svg {
+    max-width: 100%;
   }
 
   ::selection {
@@ -97,19 +133,54 @@
     border-radius: 4px;
   }
 
+  /* Reduced motion: strip decorative loops and motion, but keep the page fully
+     legible and interactive. Content must never depend on an animation to appear. */
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    .grain {
+      display: none;
     }
   }
 }
 
 @layer utilities {
-  /* Centered page gutter */
+  /* Centered page gutter. Extra bottom padding on small screens keeps content
+     clear of the iOS home indicator / gesture bar. */
   .wrap {
     @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12;
+  }
+
+  /* One consistent vertical rhythm for every section. */
+  .section {
+    padding-block: var(--space-section);
+  }
+  .section-tight {
+    padding-block: var(--space-section-tight);
+  }
+
+  /* Shared card surface — keeps radii/shadow/border identical site-wide. */
+  .surface-card {
+    @apply border-ink-900/[0.08] bg-bone-50;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+  }
+  .surface-card-hover {
+    transition: transform var(--dur-base) var(--ease-signature),
+      box-shadow var(--dur-base) var(--ease-signature),
+      border-color var(--dur-base) var(--ease-signature);
+  }
+  .surface-card-hover:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in oklab, var(--color-ink-900) 14%, transparent);
+    box-shadow: var(--shadow-card-hover);
   }
 
   /* Giant outlined display type */

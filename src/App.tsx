@@ -16,13 +16,35 @@ import { Footer } from "./components/Footer";
 export default function App() {
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
+
+    /*
+     * Reduced-motion users get the plain native scroll. No Lenis instance is
+     * created at all, so nothing can fight or lock the scroll position.
+     */
+    if (reduced) {
+      window.__scrollToHash = (hash) => {
+        document.querySelector(hash)?.scrollIntoView({ block: "start" });
+      };
+      return () => {
+        delete window.__scrollToHash;
+      };
+    }
 
     const lenis = new Lenis({
-      duration: 1.15,
+      /* 1.15 was slightly floaty; 1.0 keeps it smooth but more natural. */
+      duration: 1,
       smoothWheel: true,
-      anchors: true,
+      /* Respect the element scroll-margin-top so anchors clear the navbar. */
+      anchors: { offset: -80 },
+      /* Avoid intercepting scroll while a modal-ish surface is open. */
+      prevent: (node) =>
+        node.hasAttribute?.("data-lenis-prevent") ||
+        node.closest?.("[data-lenis-prevent]") !== null,
     } as ConstructorParameters<typeof Lenis>[0]);
+
+    /* Expose the instance so the mobile menu can pause/resume scrolling. */
+    window.__lenis = lenis;
+    window.__scrollToHash = (hash) => lenis.scrollTo(hash, { offset: -80 });
 
     let raf = 0;
     const loop = (time: number) => {
@@ -34,6 +56,8 @@ export default function App() {
     return () => {
       cancelAnimationFrame(raf);
       lenis.destroy();
+      delete window.__lenis;
+      delete window.__scrollToHash;
     };
   }, []);
 
@@ -46,9 +70,7 @@ export default function App() {
         >
           Skip to content
         </a>
-
         <Navbar />
-
         <main id="main">
           <Hero />
           <Press />
@@ -60,10 +82,8 @@ export default function App() {
           <FAQ />
           <CTA />
         </main>
-
         <Footer />
-
-        {/* Film grain — unifies the whole page */}
+        {/* Film grain — unifies the whole page. Hidden for reduced motion. */}
         <div
           aria-hidden
           className="grain pointer-events-none fixed inset-0 z-[90] opacity-[0.05] mix-blend-multiply"

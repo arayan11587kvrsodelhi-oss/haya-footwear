@@ -1,77 +1,97 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, ArrowUpRight } from "lucide-react";
+import { Plus } from "lucide-react";
 import { EASE } from "../lib/motion";
 import { Reveal, Tag } from "./ui";
+import { ResponsiveImage } from "./ResponsiveImage";
 import { cn } from "../utils/cn";
 
+/**
+ * Honest FAQ. Every answer describes the actual status of this concept rather
+ * than promising a product, service, or policy that does not exist.
+ */
 const FAQS = [
   {
-    q: "How does the sizing run?",
-    a: "The current page is a concept study, so there is no live sizing or checkout flow yet. The final product spec would pair this section with a real size chart, fit notes, and an exchange policy.",
+    q: "Is haya a real, purchasable shoe?",
+    a: "No. This is a self-contained design concept exploring editorial art direction, product presentation, motion, and responsive front-end work. There is no product to buy and no checkout anywhere on this page.",
   },
   {
-    q: "What exactly is the 60-day trial?",
-    a: "This landing page uses trial language as part of the visual product story only. A real launch would replace it with the actual return window, eligibility rules, and refund policy before publishing.",
+    q: "What about sizing and fit?",
+    a: "There is no live size chart or fit guarantee, because there is no manufactured product behind the concept. A real launch would pair this section with tested sizing data and fit notes.",
   },
   {
-    q: "How fast is shipping, and where do you deliver?",
-    a: "There is no live fulfillment network attached to this concept. Delivery windows, regions, duties, and shipping methods would be added once a real commerce backend exists.",
+    q: "How does shipping and returns work?",
+    a: "It does not. There is no fulfillment network, shipping service, or returns policy attached to this project. Those would be added only alongside a real commerce backend.",
   },
   {
-    q: "Can I really machine-wash them?",
-    a: "The care story is intentionally simple, but the final washing instructions should follow the validated material specification for the production shoe.",
+    q: "Are the material systems real?",
+    a: "FeatherCell, FluxKnit, SeamZero, and EverGrip are fictional names created for this concept. They describe design intent, not measured or certified performance.",
   },
   {
-    q: "What makes FeatherCell™ different from regular foam?",
-    a: "FeatherCell™ is presented here as a fictional material system for the concept. The final page should use measured lab data only if a real product and testing program back those numbers.",
+    q: "Is there a sustainability claim here?",
+    a: "No. Any recycled-content, lifecycle, or carbon statement would require verified supplier and testing data, so none is made on this page.",
   },
   {
-    q: "Is the sustainability claim real or marketing?",
-    a: "The sustainability section is also conceptual. Any recycled-content, lifecycle, carbon, or traceability statement should be replaced with verified supplier and lifecycle data before public commerce use.",
+    q: "Can I reuse the visual direction?",
+    a: "The concept exists as a design exercise. The images, type system, colour palette, and interaction patterns are part of that study rather than a licensed brand asset.",
   },
 ];
 
 function Item({ q, a, index }: { q: string; a: string; index: number }) {
   const [open, setOpen] = useState(index === 0);
-  const id = `faq-panel-${index}`;
+  const panelId = `faq-panel-${index}`;
+  const buttonId = `faq-button-${index}`;
+
   return (
-    <Reveal delay={index * 0.05}>
+    <Reveal delay={index * 0.04}>
       <div
         className={cn(
-          "rounded-2xl border transition-colors duration-300",
-          open ? "border-ink-900/[0.12] bg-white/70 shadow-lg shadow-ink-950/[0.05]" : "border-ink-900/[0.08] bg-transparent hover:bg-white/40"
+          "rounded-[var(--radius-lg)] border transition-colors duration-[var(--dur-base)]",
+          open
+            ? "border-ink-900/[0.12] bg-white/70 shadow-[0_16px_36px_-20px_rgba(19,18,16,0.18)]"
+            : "border-ink-900/[0.08] bg-transparent hover:bg-white/40"
         )}
       >
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-controls={id}
-          className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left"
-        >
-          <span className="font-display text-[17.5px] font-semibold tracking-tight text-ink-950">{q}</span>
-          <span
-            className={cn(
-              "grid size-9 shrink-0 place-items-center rounded-full border transition-all duration-400",
-              open ? "rotate-45 border-ember-500 bg-ember-500 text-white" : "border-ink-900/15 text-ink-900"
-            )}
+        <h3>
+          <button
+            id={buttonId}
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls={panelId}
+            className="flex w-full cursor-pointer items-center justify-between gap-5 rounded-[var(--radius-lg)] px-5 py-4.5 text-left sm:px-6 sm:py-5"
           >
-            <Plus className="size-4" aria-hidden />
-          </span>
-        </button>
+            <span className="font-display text-[16.5px] font-semibold leading-snug tracking-[-0.02em] text-ink-950 sm:text-[17.5px]">
+              {q}
+            </span>
+            <span
+              className={cn(
+                "grid size-9 shrink-0 place-items-center rounded-full border transition-[transform,background-color,border-color,color] duration-[var(--dur-base)]",
+                open
+                  ? "rotate-45 border-ember-500 bg-ember-500 text-white"
+                  : "border-ink-900/15 text-ink-900"
+              )}
+              aria-hidden
+            >
+              <Plus className="size-4" />
+            </span>
+          </button>
+        </h3>
         <AnimatePresence initial={false}>
           {open && (
             <motion.div
-              id={id}
+              id={panelId}
               role="region"
+              aria-labelledby={buttonId}
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.45, ease: EASE }}
+              transition={{ duration: 0.35, ease: EASE }}
               className="overflow-hidden"
             >
-              <p className="px-6 pb-6 pt-0 max-w-xl text-[14.5px] leading-relaxed text-ink-600">{a}</p>
+              <p className="max-w-xl px-5 pb-5 text-[14.5px] leading-[1.7] text-ink-600 sm:px-6 sm:pb-6">
+                {a}
+              </p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -82,51 +102,53 @@ function Item({ q, a, index }: { q: string; a: string; index: number }) {
 
 export function FAQ() {
   return (
-    <section id="faq" className="py-24 sm:py-32" aria-labelledby="faq-title">
-      <div className="wrap grid gap-14 lg:grid-cols-12 lg:gap-16">
+    <section id="faq" className="section" aria-labelledby="faq-title">
+      <div className="wrap grid gap-12 lg:grid-cols-12 lg:gap-16">
         {/* Left rail */}
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-28">
             <Reveal>
               <Tag>FAQ</Tag>
             </Reveal>
-            <Reveal delay={0.1}>
+            <Reveal delay={0.08}>
               <h2
                 id="faq-title"
-                className="mt-5 font-display text-[clamp(2.2rem,4.6vw,3.4rem)] font-semibold leading-[1.05] tracking-[-0.025em] text-ink-950"
+                className="mt-5 font-display text-[clamp(2.1rem,4.6vw,3.4rem)] font-semibold leading-[1.02] tracking-[-0.03em] text-ink-950"
               >
                 Asked,{" "}
                 <em className="font-accent font-normal italic text-ember-500">answered.</em>
               </h2>
             </Reveal>
-            <Reveal delay={0.18}>
-              <p className="mt-5 max-w-sm text-[16px] leading-relaxed text-ink-600">
-                Everything people ask before they step into the concept.
-                The production version would connect these answers to real sizing, shipping, care, and returns data.
+            <Reveal delay={0.14}>
+              <p className="mt-5 max-w-sm text-[16px] leading-[1.7] text-ink-600">
+                The honest answers about what this project is, and what it is
+                deliberately not. No product claims, no invented policies.
               </p>
             </Reveal>
 
-            <Reveal delay={0.26}>
-              <div className="relative mt-9 overflow-hidden rounded-3xl border border-ink-900/[0.08]">
-                <img
-                  src="/images/editorial.png"
+            <Reveal delay={0.2}>
+              <div className="relative mt-9 overflow-hidden rounded-[var(--radius-xl)] border-ink-900/[0.08]">
+                <ResponsiveImage
+                  name="editorial"
                   alt="haya sneakers resting on a stone pedestal in warm sunlight"
-                  width={1024}
-                  height={768}
-                  loading="lazy"
-                  className="aspect-[16/11] w-full object-cover"
+                  ratio="16 / 11"
+                  sizes="(max-width: 1023px) 92vw, 40vw"
+                  className="rounded-none"
                 />
-                <div className="absolute inset-x-4 bottom-4 flex items-center justify-between gap-4 rounded-2xl bg-bone-50/85 px-5 py-4 backdrop-blur-xl">
+                <div className="absolute inset-x-3 bottom-3 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] bg-bone-50/88 px-5 py-4 backdrop-blur-xl sm:inset-x-4 sm:bottom-4">
                   <div>
-                    <p className="text-[14px] font-semibold text-ink-950">Talk to a human</p>
-                    <p className="text-[12.5px] text-ink-500">Concept enquiry</p>
+                    <p className="text-[13.5px] font-semibold text-ink-950">
+                      About this project
+                    </p>
+                    <p className="text-[12px] text-ink-500">
+                      An independent design study
+                    </p>
                   </div>
                   <a
                     href="#cta"
-                    className="group inline-flex items-center gap-1.5 rounded-full bg-ink-950 px-4 py-2 text-[13px] font-semibold text-bone-50 transition-transform hover:scale-105"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-ink-950 px-4 py-2.5 text-[13px] font-semibold text-bone-50 transition-transform duration-[var(--dur-base)] hover:-translate-y-0.5 lg:min-h-0"
                   >
-                    Explore the concept
-                    <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+                    Read the close
                   </a>
                 </div>
               </div>
